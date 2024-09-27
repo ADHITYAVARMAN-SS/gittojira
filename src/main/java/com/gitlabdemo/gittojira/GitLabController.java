@@ -24,4 +24,10 @@ public class GitLabController {
         String response = gitLabIssueService.getIssues(projectId);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/migrate-issue")
+    public ResponseEntity<String> migrateIssue(@RequestParam String projectId, @RequestParam Long issueId) {
+    String response = gitLabIssueService.migrateIssueToJira(projectId, issueId);
+    return ResponseEntity.ok(response);
+}
 }

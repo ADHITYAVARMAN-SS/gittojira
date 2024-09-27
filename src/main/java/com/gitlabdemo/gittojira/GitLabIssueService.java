@@ -88,5 +88,42 @@ public class GitLabIssueService {
         return "Issues pushed to Jira successfully!";
     
     }
+
+
+    public String migrateIssueToJira(String projectId, Long issueId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("PRIVATE-TOKEN", privateToken);
+        
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        
+        // Fetch the specific issue from GitLab
+        
+        @SuppressWarnings("rawtypes")
+        ResponseEntity<Map> response = restTemplate.exchange(
+                GITLAB_API_URL.replace("{projectId}", projectId) + "/" + issueId,
+                HttpMethod.GET,
+                entity,
+                Map.class
+        );
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> issue = response.getBody();
+        if (issue == null) {
+            return "Issue not found in GitLab";
+        }
+    
+        String title = (String) issue.get("title");
+        String description = (String) issue.get("description");
+    
+        try {
+            jiraIssueService.createIssueInJira(title, description);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "Failed to create issue in Jira: " + e.getMessage();
+        }
+    
+        return "Issue migrated to Jira successfully!";
+    }
+    
 }
 
